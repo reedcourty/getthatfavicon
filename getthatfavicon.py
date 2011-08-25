@@ -8,6 +8,7 @@ import urllib
 import urlparse
 import sys
 import os
+import argparse
 
 import Image
 
@@ -50,16 +51,12 @@ class FaviconDownloader():
             new_fd.get_favicon()
         
 if __name__ == '__main__':
-    fd = FaviconDownloader('http://docs.python.org')
-    fd.get_favicon()
-    fd = FaviconDownloader('http://www.google.com')
-    fd.get_favicon()
-    fd = FaviconDownloader('https://github.com/reedcourty/getthatfavicon')
-    fd.get_favicon()
-    fd = FaviconDownloader('http://www.doodle.com/73hqnfzzkbmnqeqa')
-    fd.get_favicon()
-    fd = FaviconDownloader('http://translate.google.com/?hl=en#en|hu|added%20%22try%20until%20we%20find%20it%22%20feature.%20When%20the%20downloaded%20favicon%20isn%27t%20really%20an%20icon%20we%20try%20to%20find%20it%20an%20upper%20dns%20level.')
-    fd.get_favicon()
-    fd = FaviconDownloader('ratucen.sch.bme.hu')
+
+    parser = argparse.ArgumentParser()
+    
+    parser.add_argument('url', help='The URL of that page which has that nice favicon.')
+    args = parser.parse_args()
+    
+    fd = FaviconDownloader(args.url)
     fd.get_favicon()
     
