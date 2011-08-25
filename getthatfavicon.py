@@ -12,12 +12,11 @@ class FaviconDownloader():
     def __init__(self, url):
         self.url = url
         up = urlparse.urlparse(self.url)
-        self.netloc = up.netloc
         self.favicon_url = up.scheme + '://' + self.netloc + '/favicon.ico'
+        self.filename = sys.path[0] + '//favicon.' + up.netloc + '.ico'
         self.favicon = None
         
     def get_favicon(self):
-        filename = sys.path[0] + '//favicon.' + self.netloc + '.ico'
         print(self.favicon_url)
         (self.favicon, headers) = urllib.urlretrieve(self.favicon_url, filename)
         print(self.favicon, headers)
