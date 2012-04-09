@@ -47,8 +47,11 @@ class FaviconDownloader():
             print(self.filename + " isn't a valid favicon.")
             os.remove(self.filename)
             new_url = self.scheme + '://' + self.netloc[((self.netloc.find('.'))+1):]
-            new_fd = FaviconDownloader(new_url)
-            new_fd.get_favicon()
+            # If the domain of URL contains at least one "." character (so it's 
+            # a valid domain), we give an other chance:
+            if (new_url.find('.') != -1):
+                new_fd = FaviconDownloader(new_url)
+                new_fd.get_favicon()
         
 if __name__ == '__main__':
 
