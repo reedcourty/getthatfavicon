@@ -117,7 +117,7 @@ class FaviconDownloader():
                 debug_print('get_favicon_url > up', up)
                 
             if (up.scheme == ''):
-                url_scheme = 'http://'
+                url_scheme = 'http'
             else:
                 url_scheme = up.scheme
                 
@@ -126,7 +126,7 @@ class FaviconDownloader():
             else:
                 url_netloc = up.netloc
                 
-            favicon = url_scheme + url_netloc + up.path
+            favicon = url_scheme + "://" + url_netloc + up.path
             
             if DEBUG:
                 debug_print('get_favicon_url > favicon', favicon)
