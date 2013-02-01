@@ -1,2 +1,5 @@
 # A virtualenv könyvtárat kihagyjuk a repóból:
 venv/
+
+# Nem kell a commit.log:
+commit.log
