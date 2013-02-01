@@ -12,6 +12,9 @@ import argparse
 
 import Image
 
+import requests
+from bs4 import BeautifulSoup
+
 class FaviconDownloader():
     def __init__(self, url):
         self.url = url
@@ -38,20 +41,42 @@ class FaviconDownloader():
             return True
         else:
             return False
+            
+    def get_favicon_url(self):
+        
+        up = urlparse.urlparse(self.url)
+        print(up)
+        if (up.scheme == ''):
+            self.url = 'http://' + self.url
+                
+        r = requests.get(self.url)
+
+        soup = BeautifulSoup(r.text.encode('utf-8'))
+        icons = soup.head.find_all(rel="icon")
+        
+        self.favicon_url = []
+        
+        for icon in icons:
+            if (icon['href'].find("://") == -1):
+                favicon = self.url + icon['href']
+            else:
+                favicon = icon['href']
+            self.favicon_url.append(favicon)
         
     def get_favicon(self):
-        print("\n" + self.favicon_url)
-        (self.favicon, headers) = urllib.urlretrieve(self.favicon_url, self.filename)
-        print(self.favicon)
-        if not self.is_valid_favicon():
-            print(self.filename + " isn't a valid favicon.")
-            os.remove(self.filename)
-            new_url = self.scheme + '://' + self.netloc[((self.netloc.find('.'))+1):]
-            # If the domain of URL contains at least one "." character (so it's 
-            # a valid domain), we give an other chance:
-            if (new_url.find('.') != -1):
-                new_fd = FaviconDownloader(new_url)
-                new_fd.get_favicon()
+        for fu in self.favicon_url:
+            print("\n" + fu)
+            (self.favicon, headers) = urllib.urlretrieve(fu, self.filename)
+            print(self.favicon)
+            if not self.is_valid_favicon():
+                print(self.filename + " isn't a valid favicon.")
+                os.remove(self.filename)
+                new_url = self.scheme + '://' + self.netloc[((self.netloc.find('.'))+1):]
+                # If the domain of URL contains at least one "." character (so it's 
+                # a valid domain), we give an other chance:
+                if (new_url.find('.') != -1):
+                    new_fd = FaviconDownloader(new_url)
+                    new_fd.get_favicon()
         
 if __name__ == '__main__':
 
@@ -61,5 +86,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
     
     fd = FaviconDownloader(args.url)
+    fd.get_favicon_url()
     fd.get_favicon()
     
