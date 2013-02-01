@@ -82,8 +82,29 @@ class FaviconDownloader():
             debug_print('get_favicon_url > r', r)
         
         soup = BeautifulSoup(r.text.encode('utf-8'))
-        icons = soup.head.find_all(rel="icon")
-               
+        
+        try:
+            icons = soup.head.find_all(rel="icon")
+        except AttributeError as e:
+            if DEBUG:
+                print("Possible redirecting...")
+                debug_print('get_favicon_url > r', r.content)
+            if r.content.find("Refresh"):
+                self.url = r.content[r.content.find("URL=")+4:len(r.content)]
+                self.url = self.url[0:self.url.find('"')]
+            if DEBUG:
+                debug_print('get_favicon_url > self.url', self.url)
+            r = requests.get(self.url)
+        
+            if DEBUG:
+                debug_print('get_favicon_url > r', r)
+        
+            soup = BeautifulSoup(r.text.encode('utf-8'))
+            try:
+                icons = soup.head.find_all(rel="icon")
+            except AttributeError as e:
+                print("Error")
+                
         self.favicon_url = []
         
         for icon in icons:
@@ -126,22 +147,34 @@ class FaviconDownloader():
             f.write(self.icon)
     
     def get_favicon(self):
-        for fu in self.favicon_url:
-            print("\nDownloading {0} ...".format(fu))
-            r = requests.get(fu)
-            
-            self.icon = r.content
-                       
-            t = fu.split("/")
-            if (t[len(t)-1] == 'favicon.ico' or t[len(t)-1] == 'favicon.png'):
-                self.filename = "favicon." + self.url.split("//")[1] + "." + self.get_favicon_type().lower()
-            else:
-                self.filename = "favicon." + self.url.split("//")[1] + "-" + t[len(t)-1] + "." + self.get_favicon_type().lower()
-            
-            if self.is_valid_favicon():
-                self.save_favicon()
-            else:
-                print("Wrong icon!")
+        if (len(self.favicon_url) > 0):
+            for fu in self.favicon_url:
+                print("\nDownloading {0} ...".format(fu))
+                r = requests.get(fu)
+                
+                self.icon = r.content
+                           
+                t = fu.split("/")
+                
+                up = urlparse.urlparse(self.url)
+                
+                if DEBUG:
+                    debug_print('get_favicon > up', up)
+                
+                if (t[len(t)-1] == 'favicon.ico' or t[len(t)-1] == 'favicon.png'):
+                    self.filename = "favicon." + up.netloc + "." + self.get_favicon_type().lower()
+                else:
+                    self.filename = "favicon." + up.netloc + "-" + t[len(t)-1] + "." + self.get_favicon_type().lower()
+                
+                if DEBUG:
+                    debug_print('get_favicon > self.filename', self.filename)
+                
+                if self.is_valid_favicon():
+                    self.save_favicon()
+                else:
+                    print("Wrong icon!")
+        else:
+            print("The page hasn't got favicon!")
 
 if __name__ == '__main__':
     
