@@ -19,18 +19,8 @@ from bs4 import BeautifulSoup
 class FaviconDownloader():
     def __init__(self, url):
         self.url = url
-        up = urlparse.urlparse(self.url)
-        if (up.scheme == ''):
-            self.scheme = 'http'
-        else:
-            self.scheme = up.scheme
-        if (up.netloc == ''):
-            self.netloc = up.path
-        else:
-            self.netloc = up.netloc
-        self.favicon_url = self.scheme + '://' + self.netloc + '/favicon.ico'
-        self.filename = sys.path[0] + '//favicon.' + self.netloc + '.ico'
-        self.favicon = None
+        self.favicon_url = None
+        self.filename = None
     
     def is_valid_favicon(self):
         try:
