@@ -56,7 +56,6 @@ class FaviconDownloader():
     def get_favicon_url(self):
         
         up = urlparse.urlparse(self.url)
-        print(up)
         if (up.scheme == ''):
             self.url = 'http://' + self.url
                 
@@ -77,18 +76,14 @@ class FaviconDownloader():
     def get_favicon(self):
         for fu in self.favicon_url:
             print("\n" + fu)
-            (self.favicon, headers) = urllib.urlretrieve(fu, self.filename)
-            print(self.favicon)
-            if not self.is_valid_favicon():
-                print(self.filename + " isn't a valid favicon.")
-                os.remove(self.filename)
-                new_url = self.scheme + '://' + self.netloc[((self.netloc.find('.'))+1):]
-                # If the domain of URL contains at least one "." character (so it's 
-                # a valid domain), we give an other chance:
-                if (new_url.find('.') != -1):
-                    new_fd = FaviconDownloader(new_url)
-                    new_fd.get_favicon()
-        
+            r = requests.get(fu)
+                       
+            t = fu.split("/")
+            filename = "favicon." + self.url.split("//")[1] + "." + t[len(t)-1] + "." + self.get_favicon_type().lower()
+            print(filename)
+            with open(filename,"wb") as f:
+                f.write(r.content)  
+
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
@@ -99,5 +94,5 @@ if __name__ == '__main__':
     fd = FaviconDownloader(args.url)
     fd.get_favicon_url()
     fd.get_favicon()
-    print(fd.get_favicon_type())
+
     
