@@ -8,8 +8,10 @@ import urllib
 import urlparse
 import sys
 import os
+import os.path
 import argparse
 import StringIO
+import datetime
 
 import Image
 
@@ -68,7 +70,15 @@ class FaviconDownloader():
             else:
                 favicon = icon['href']
             self.favicon_url.append(favicon)
-        
+    
+    def save_favicon(self):
+        if (os.path.exists(self.filename)):
+            now = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+            self.filename = self.filename + "." + now + "." + self.get_favicon_type().lower()
+        print(self.filename)
+        with open(self.filename,"wb") as f:
+            f.write(self.icon)
+    
     def get_favicon(self):
         for fu in self.favicon_url:
             print("\n" + fu)
@@ -78,9 +88,8 @@ class FaviconDownloader():
                        
             t = fu.split("/")
             self.filename = "favicon." + self.url.split("//")[1] + "." + t[len(t)-1] + "." + self.get_favicon_type().lower()
-            print(self.filename)
-            with open(self.filename,"wb") as f:
-                f.write(self.icon)  
+            
+            self.save_favicon()
 
 if __name__ == '__main__':
 
