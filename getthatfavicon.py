@@ -4,17 +4,13 @@
 A favicon downloader
 """
 
-import urllib
 import urlparse
-import sys
-import os
 import os.path
 import argparse
 import StringIO
 import datetime
 
 import Image
-
 import requests
 from bs4 import BeautifulSoup
 
