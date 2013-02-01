@@ -9,6 +9,7 @@ import urlparse
 import sys
 import os
 import argparse
+import StringIO
 
 import Image
 
@@ -43,8 +44,12 @@ class FaviconDownloader():
             return False
             
     def get_favicon_type(self):
+    
+        output = StringIO.StringIO(self.icon)
+                
         try:
-            img = Image.open(self.filename)
+            img = Image.open(output)
+            output.close()
         except IOError as error:
             if error[0] == "cannot identify image file":
                 return None
@@ -77,6 +82,8 @@ class FaviconDownloader():
         for fu in self.favicon_url:
             print("\n" + fu)
             r = requests.get(fu)
+            
+            self.icon = r.content
                        
             t = fu.split("/")
             filename = "favicon." + self.url.split("//")[1] + "." + t[len(t)-1] + "." + self.get_favicon_type().lower()
