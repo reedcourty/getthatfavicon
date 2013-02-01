@@ -42,6 +42,17 @@ class FaviconDownloader():
         else:
             return False
             
+    def get_favicon_type(self):
+        try:
+            img = Image.open(self.filename)
+        except IOError as error:
+            if error[0] == "cannot identify image file":
+                return None
+        if img.format == 'ICO':
+            return 'ICO'
+        if img.format == 'PNG':
+            return 'PNG'
+            
     def get_favicon_url(self):
         
         up = urlparse.urlparse(self.url)
@@ -88,4 +99,5 @@ if __name__ == '__main__':
     fd = FaviconDownloader(args.url)
     fd.get_favicon_url()
     fd.get_favicon()
+    print(fd.get_favicon_type())
     
