@@ -25,27 +25,32 @@ class FaviconDownloader():
         self.filename = None
         self.icon = None
     
-    def is_valid_favicon(self):
+    def get_img(self):
+        output = StringIO.StringIO(self.icon)
+                
         try:
-            img = Image.open(self.filename)
+            img = Image.open(output)
+            output.close()
+            return img
         except IOError as error:
             if error[0] == "cannot identify image file":
-                return False
+                return None
+    
+    def is_valid_favicon(self):
+        img = self.get_img()
+        
+        if img == None:
+            return False
         if img.format == 'ICO' or img.format == 'PNG':
             return True
         else:
             return False
             
     def get_favicon_type(self):
-    
-        output = StringIO.StringIO(self.icon)
-                
-        try:
-            img = Image.open(output)
-            output.close()
-        except IOError as error:
-            if error[0] == "cannot identify image file":
-                return None
+        img = self.get_img()
+        
+        if img == None:
+            return 'ERROR'
         if img.format == 'ICO':
             return 'ICO'
         if img.format == 'PNG':
@@ -89,7 +94,10 @@ class FaviconDownloader():
             t = fu.split("/")
             self.filename = "favicon." + self.url.split("//")[1] + "." + t[len(t)-1] + "." + self.get_favicon_type().lower()
             
-            self.save_favicon()
+            if self.is_valid_favicon():
+                self.save_favicon()
+            else:
+                print("Hibás ikon!")
 
 if __name__ == '__main__':
 
