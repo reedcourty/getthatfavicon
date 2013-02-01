@@ -21,6 +21,7 @@ class FaviconDownloader():
         self.url = url
         self.favicon_url = None
         self.filename = None
+        self.icon = None
     
     def is_valid_favicon(self):
         try:
@@ -76,10 +77,10 @@ class FaviconDownloader():
             self.icon = r.content
                        
             t = fu.split("/")
-            filename = "favicon." + self.url.split("//")[1] + "." + t[len(t)-1] + "." + self.get_favicon_type().lower()
-            print(filename)
-            with open(filename,"wb") as f:
-                f.write(r.content)  
+            self.filename = "favicon." + self.url.split("//")[1] + "." + t[len(t)-1] + "." + self.get_favicon_type().lower()
+            print(self.filename)
+            with open(self.filename,"wb") as f:
+                f.write(self.icon)  
 
 if __name__ == '__main__':
 
