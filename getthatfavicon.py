@@ -27,8 +27,9 @@ from bs4 import BeautifulSoup
 test_pages = ['index.hu', 'twitter.com', 'otp.hu', 'worldoftanks.eu', 'facebook.com', 'projecteuler.com']
 
 def debug_print(var_str, var):
-    now = datetime.datetime.now().strftime("%Y.%m.%d %H:%M:%S")
-    print("DEBUG -- {0} -- {1} = {2}".format(now, var_str, var))
+    if DEBUG:
+        now = datetime.datetime.now().strftime("%Y.%m.%d %H:%M:%S")
+        print("DEBUG -- {0} -- {1} = {2}".format(now, var_str, var))
 
 class FaviconDownloader():
 
@@ -37,8 +38,7 @@ class FaviconDownloader():
         if (up.scheme == ''):
             self.full_url = 'http://' + self.url
             
-        if DEBUG:
-            debug_print('get_full_url > self.full_url', self.full_url)
+        debug_print('get_full_url > self.full_url', self.full_url)
 
     def __init__(self, url):
         self.url = url
@@ -46,11 +46,11 @@ class FaviconDownloader():
         self.favicon_url = None
         self.filename = None
         self.icon = None
-        if DEBUG:
-            debug_print('fd.url', self.url)
-            debug_print('fd.favicon_url', self.favicon_url)
-            debug_print('fd.filename', self.filename)
-            debug_print('fd.icon', self.icon)
+        
+        debug_print('fd.url', self.url)
+        debug_print('fd.favicon_url', self.favicon_url)
+        debug_print('fd.filename', self.filename)
+        debug_print('fd.icon', self.icon)
     
     def get_img(self):
         output = StringIO.StringIO(self.icon)
@@ -66,8 +66,7 @@ class FaviconDownloader():
     def is_valid_favicon(self):
         img = self.get_img()
         
-        if DEBUG:
-            debug_print('is_valid_favicon > img', img)
+        debug_print('is_valid_favicon > img', img)
         
         if img == None:
             return False
@@ -79,8 +78,7 @@ class FaviconDownloader():
     def get_favicon_type(self):
         img = self.get_img()
         
-        if DEBUG:
-            debug_print('get_favicon_type > img', img)
+        debug_print('get_favicon_type > img', img)
         
         if img == None:
             return 'ERROR'
@@ -92,34 +90,42 @@ class FaviconDownloader():
     def get_favicon_url(self):
         
         self.get_full_url()
-                
-        r = requests.get(self.full_url)
         
-        if DEBUG:
-            debug_print('get_favicon_url > r', r)
+        try:
+            r = requests.get(self.full_url)
+        except requests.exceptions.ConnectionError as e:
+            print('Connection error!')
+            if DEBUG:
+                print("The error was: {0}".format(e))
+            sys.exit()
+        
+        debug_print('get_favicon_url > r', r)
         
         soup = BeautifulSoup(r.text.encode('utf-8'))
         
+        debug_print('get_favicon_url > soup', soup)
+        
         try:
             icons = soup.head.find_all(rel="icon")
+            debug_print('get_favicon_url > icons', icons)
         except AttributeError as e:
             if DEBUG:
                 print("Possible redirecting...")
-                debug_print('get_favicon_url > r', r.content)
+            debug_print('get_favicon_url > r', r.content)
             if r.content.find("Refresh"):
                 self.full_url = r.content[r.content.find("URL=")+4:len(r.content)]
                 self.full_url = self.full_url[0:self.full_url.find('"')]
-            if DEBUG:
-                debug_print('get_favicon_url > self.url', self.url)
-                debug_print('get_favicon_url > self.full_url', self.full_url)
+            
+            debug_print('get_favicon_url > self.url', self.url)
+            debug_print('get_favicon_url > self.full_url', self.full_url)
+            
             try:
                 r = requests.get(self.full_url)
             except requests.exceptions.MissingSchema as e:
                 print("Something went wrong! :( {0}".format(e))
                 sys.exit()
         
-            if DEBUG:
-                debug_print('get_favicon_url > r', r)
+            debug_print('get_favicon_url > r', r)
         
             soup = BeautifulSoup(r.text.encode('utf-8'))
             try:
@@ -130,13 +136,11 @@ class FaviconDownloader():
         self.favicon_url = [self.full_url + "/favicon.ico"]
         
         for icon in icons:
-            if DEBUG:
-                debug_print('get_favicon_url > icon[\'href\']', icon['href'])
+            debug_print('get_favicon_url > icon[\'href\']', icon['href'])
                 
             up = urlparse.urlparse(icon['href'])
             
-            if DEBUG:
-                debug_print('get_favicon_url > up', up)
+            debug_print('get_favicon_url > up', up)
                 
             if (up.scheme == ''):
                 url_scheme = 'http'
@@ -150,20 +154,17 @@ class FaviconDownloader():
                 
             favicon = url_scheme + "://" + url_netloc + up.path
             
-            if DEBUG:
-                debug_print('get_favicon_url > favicon', favicon)
+            debug_print('get_favicon_url > favicon', favicon)
             
             self.favicon_url.append(favicon)
         
-        if DEBUG:
-            debug_print('get_favicon_url > self.favicon_url', self.favicon_url)
+        debug_print('get_favicon_url > self.favicon_url', self.favicon_url)
     
     def save_favicon(self):
         if (os.path.exists(self.filename)):
             now = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
             self.filename = self.filename + "." + now + "." + self.get_favicon_type().lower()
-        if DEBUG:
-            debug_print('save_favicon > self.filename', self.filename)
+        debug_print('save_favicon > self.filename', self.filename)
         print(u"Saving {0} ...".format(self.filename))
         with open(self.filename,"wb") as f:
             f.write(self.icon)
@@ -180,16 +181,14 @@ class FaviconDownloader():
                 
                 up = urlparse.urlparse(self.full_url)
                 
-                if DEBUG:
-                    debug_print('get_favicon > up', up)
+                debug_print('get_favicon > up', up)
                 
                 if (t[len(t)-1] == 'favicon.ico' or t[len(t)-1] == 'favicon.png'):
                     self.filename = "favicon." + up.netloc + "." + self.get_favicon_type().lower()
                 else:
                     self.filename = "favicon." + up.netloc + "-" + t[len(t)-1] + "." + self.get_favicon_type().lower()
                 
-                if DEBUG:
-                    debug_print('get_favicon > self.filename', self.filename)
+                debug_print('get_favicon > self.filename', self.filename)
                 
                 if self.is_valid_favicon():
                     self.save_favicon()
