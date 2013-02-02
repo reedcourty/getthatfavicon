@@ -15,13 +15,34 @@ import Image
 import requests
 from bs4 import BeautifulSoup
 
+# Some test cases:
+#
+# - index.hu (Multiple icon)
+# - twitter.com (CDN)
+# - otp.hu (Redirecting)
+# - worldoftanks.eu (Default domain/favicon.ico, no HTML link)
+# - facebook.com
+# - projecteuler.com (Wrong TLD)
+
+test_pages = ['index.hu', 'twitter.com', 'otp.hu', 'worldoftanks.eu', 'facebook.com', 'projecteuler.com']
+
 def debug_print(var_str, var):
     now = datetime.datetime.now().strftime("%Y.%m.%d %H:%M:%S")
     print("DEBUG -- {0} -- {1} = {2}".format(now, var_str, var))
 
 class FaviconDownloader():
+
+    def get_full_url(self):
+        up = urlparse.urlparse(self.url)
+        if (up.scheme == ''):
+            self.full_url = 'http://' + self.url
+            
+        if DEBUG:
+            debug_print('get_full_url > self.full_url', self.full_url)
+
     def __init__(self, url):
         self.url = url
+        self.full_url = self.get_full_url()
         self.favicon_url = None
         self.filename = None
         self.icon = None
@@ -70,14 +91,9 @@ class FaviconDownloader():
             
     def get_favicon_url(self):
         
-        up = urlparse.urlparse(self.url)
-        if (up.scheme == ''):
-            self.url = 'http://' + self.url
-            
-        if DEBUG:
-            debug_print('get_favicon_url > self.url', self.url)
+        self.get_full_url()
                 
-        r = requests.get(self.url)
+        r = requests.get(self.full_url)
         
         if DEBUG:
             debug_print('get_favicon_url > r', r)
@@ -91,12 +107,13 @@ class FaviconDownloader():
                 print("Possible redirecting...")
                 debug_print('get_favicon_url > r', r.content)
             if r.content.find("Refresh"):
-                self.url = r.content[r.content.find("URL=")+4:len(r.content)]
-                self.url = self.url[0:self.url.find('"')]
+                self.full_url = r.content[r.content.find("URL=")+4:len(r.content)]
+                self.full_url = self.full_url[0:self.full_url.find('"')]
             if DEBUG:
                 debug_print('get_favicon_url > self.url', self.url)
+                debug_print('get_favicon_url > self.full_url', self.full_url)
             try:
-                r = requests.get(self.url)
+                r = requests.get(self.full_url)
             except requests.exceptions.MissingSchema as e:
                 print("Something went wrong! :( {0}".format(e))
                 sys.exit()
@@ -110,7 +127,7 @@ class FaviconDownloader():
             except AttributeError as e:
                 print("Error")
                 
-        self.favicon_url = []
+        self.favicon_url = [self.full_url + "/favicon.ico"]
         
         for icon in icons:
             if DEBUG:
@@ -127,7 +144,7 @@ class FaviconDownloader():
                 url_scheme = up.scheme
                 
             if (up.netloc == ''):
-                url_netloc = urlparse.urlparse(self.url).netloc
+                url_netloc = urlparse.urlparse(self.full_url).netloc
             else:
                 url_netloc = up.netloc
                 
@@ -161,7 +178,7 @@ class FaviconDownloader():
                            
                 t = fu.split("/")
                 
-                up = urlparse.urlparse(self.url)
+                up = urlparse.urlparse(self.full_url)
                 
                 if DEBUG:
                     debug_print('get_favicon > up', up)
@@ -189,10 +206,19 @@ if __name__ == '__main__':
     
     parser.add_argument('url', help='The URL of that page which has that nice favicon.')
     parser.add_argument('--debug', action="store_true", default=False, help='Switch on the debug mode.')
+    parser.add_argument('--test', action="store_true", default=False, help='Switch on the test mode.')
+    
     args = parser.parse_args()
     
+    if args.test:
+        DEBUG = True
+        for p in test_pages:
+            fd = FaviconDownloader(p)
+            fd.get_favicon_url()
+            fd.get_favicon()
+    
     if args.debug:
-       DEBUG = True
+        DEBUG = True
     
     fd = FaviconDownloader(args.url)
     fd.get_favicon_url()
