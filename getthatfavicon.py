@@ -9,6 +9,7 @@ import os.path
 import argparse
 import StringIO
 import datetime
+import sys
 
 import Image
 import requests
@@ -94,7 +95,11 @@ class FaviconDownloader():
                 self.url = self.url[0:self.url.find('"')]
             if DEBUG:
                 debug_print('get_favicon_url > self.url', self.url)
-            r = requests.get(self.url)
+            try:
+                r = requests.get(self.url)
+            except requests.exceptions.MissingSchema as e:
+                print("Something went wrong! :( {0}".format(e))
+                sys.exit()
         
             if DEBUG:
                 debug_print('get_favicon_url > r', r)
