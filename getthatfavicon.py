@@ -39,15 +39,30 @@ class FaviconDownloader():
             self.full_url = 'http://' + self.url
             
         debug_print('get_full_url > self.full_url', self.full_url)
+        
+    def set_page_url(self):
+        up = urlparse.urlparse(self.url)
+        
+        debug_print('set_page_url > up', up)
+        
+        if (up.scheme == ''):
+            self.page_url = 'http://' + self.url
+        else:
+            self.page_url = self.url
+            
+        debug_print('set_page_url > self.page_url', self.page_url)
+        
 
     def __init__(self, url):
         self.url = url
+        self.page_url = self.set_page_url()
         self.full_url = self.get_full_url()
         self.favicon_url = None
         self.filename = None
         self.icon = None
         
         debug_print('fd.url', self.url)
+        debug_print('fd.page_url', self.page_url)
         debug_print('fd.favicon_url', self.favicon_url)
         debug_print('fd.filename', self.filename)
         debug_print('fd.icon', self.icon)
