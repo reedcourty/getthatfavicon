@@ -55,16 +55,23 @@ class FaviconDownloader():
 
     def __init__(self, url):
         self.url = url
-        self.page_url = self.set_page_url()
-        self.full_url = self.get_full_url()
-        self.favicon_url = None
-        self.filename = None
-        self.icon = None
-        
         debug_print('fd.url', self.url)
+        
+        self.page_url = None
+        self.set_page_url()
         debug_print('fd.page_url', self.page_url)
+        
+        self.full_url = None
+        self.get_full_url()
+        debug_print('fd.full_url', self.full_url)
+        
+        self.favicon_url = None
         debug_print('fd.favicon_url', self.favicon_url)
+        
+        self.filename = None
         debug_print('fd.filename', self.filename)
+        
+        self.icon = None
         debug_print('fd.icon', self.icon)
     
     def get_img(self):
