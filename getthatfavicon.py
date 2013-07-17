@@ -34,11 +34,14 @@ class FaviconDownloader():
 
     def get_full_url(self):
         up = urlparse.urlparse(self.url)
-        logger.debug('get_full_url -> up = {0}'.format(up))
+        logger.debug('get_full_url() -> up = {}'.format(up))
+        logger.debug('get_full_url() -> up.scheme = {}'.format(up.scheme))
         if (up.scheme == ''):
+            logger.debug('get_full_url() -> self.url = {}'.format(self.url))
             self.full_url = 'http://' + self.url
-            
-        logger.debug('get_full_url -> self.full_url = {0}'.format(self.full_url))
+        else:
+            self.full_url = self.url
+        logger.debug('get_full_url() -> self.full_url = {0}'.format(self.full_url))
         
     def set_page_url(self):
         up = urlparse.urlparse(self.url)
@@ -184,8 +187,10 @@ class FaviconDownloader():
             favicon = url_scheme + "://" + url_netloc + up.path
             
             logger.debug('get_favicon_urls -> favicon = {0}'.format(favicon))
+            logger.debug('get_favicon_urls -> self.favicon_url = {}'.format(self.favicon_url))
             
-            self.favicon_url.append(favicon)
+            if (favicon not in self.favicon_url):
+                self.favicon_url.append(favicon)
         
         logger.debug('get_favicon_urls -> self.favicon_url = {0}'.format(self.favicon_url))
     
