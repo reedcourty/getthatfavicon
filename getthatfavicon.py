@@ -16,7 +16,7 @@ import Image
 import requests
 from bs4 import BeautifulSoup
 
-
+import frequests
 
 # Some test cases:
 #
@@ -204,15 +204,13 @@ class FaviconDownloader():
             f.write(self.icon)
     
     def get_favicon(self):
+        METHOD_NAME = "get_favicon"
         if (len(self.favicon_url) > 0):
-            for fu in self.favicon_url:
-                logger.info('get_favicon : Downloading {0} ...'.format(fu))
-                r = requests.get(fu)
-                
+            rs = (frequests.get(url) for url in self.favicon_url)
+            for r in frequests.map(rs):
                 self.icon = r.content
-                           
-                t = fu.split("/")
-                
+                logger.debug('{} -> r.url = {}'.format(METHOD_NAME, r.url))
+                t = r.url.split("/")
                 up = urlparse.urlparse(self.full_url)
                 
                 logger.debug('get_favicon -> up = {0}'.format(up))
