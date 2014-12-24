@@ -34,7 +34,7 @@ import frequests
 # - 750g.com (Downloading http://750g.comimgT/favicon.ico ...)
 # - projecteuler.com (Wrong TLD)
 
-test_pages = ['index.hu', 'twitter.com', 'otp.hu', 'worldoftanks.eu', 'facebook.com', '750g.com', 'projecteuler.com']
+test_pages = ['index.hu', 'twitter.com', 'otp.hu', 'worldoftanks.eu', 'facebook.com', '750g.com', 'projecteuler.com', 'http://www.spritzlet.com/']
 
 class FaviconDownloader(object):
 
@@ -87,7 +87,6 @@ class FaviconDownloader(object):
         
     
     def get_img(self):
-        print(self.icon)
         try:
             output = StringIO.StringIO(self.icon)
         except NameError:
