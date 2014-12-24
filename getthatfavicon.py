@@ -34,7 +34,7 @@ import frequests
 # - 750g.com (Downloading http://750g.comimgT/favicon.ico ...)
 # - projecteuler.com (Wrong TLD)
 
-test_pages = ['index.hu', 'twitter.com', 'otp.hu', 'worldoftanks.eu', 'facebook.com', '750g.com', 'projecteuler.com', 'http://www.spritzlet.com/']
+test_pages = ['index.hu', 'twitter.com', 'otp.hu', 'worldoftanks.eu', 'facebook.com', '750g.com', 'projecteuler.com']
 
 class FaviconDownloader(object):
 
@@ -87,6 +87,7 @@ class FaviconDownloader(object):
         
     
     def get_img(self):
+        result = None
         try:
             output = StringIO.StringIO(self.icon)
         except NameError:
@@ -95,11 +96,15 @@ class FaviconDownloader(object):
         try:
             img = Image.open(output)
             output.close()
-            return img
+            result = img
         except IOError as error:
-            if error[0] == "cannot identify image file":
-                return None
-    
+            if "cannot identify image file" in error.args[0]:
+                pass
+            else:
+                raise error
+        return result
+        
+
     def is_valid_favicon(self):
         img = self.get_img()
         
@@ -150,9 +155,15 @@ class FaviconDownloader(object):
         except AttributeError as e:
             logger.debug('get_favicon_urls : Possible redirecting...')
             logger.debug('get_favicon_urls -> r.content = {0}'.format(r.content))
-            if r.content.find("Refresh"):
-                self.full_url = r.content[r.content.find("URL=")+4:len(r.content)]
-                self.full_url = self.full_url[0:self.full_url.find('"')]
+            try:
+                if r.content.find("Refresh"):
+                    self.full_url = r.content[r.content.find("URL=")+4:len(r.content)]
+                    self.full_url = self.full_url[0:self.full_url.find('"')]
+            except TypeError:
+                # Python3
+                if r.content.decode('UTF-8').find("Refresh"):
+                    self.full_url = r.content[r.content.decode('UTF-8').find("URL=")+4:len(r.content)]
+                    self.full_url = self.full_url[0:self.full_url.decode('UTF-8').find('"')]
             
             logger.debug('get_favicon_urls -> self.url = {0}'.format(self.url))
             logger.debug('get_favicon_urls -> self.full_url = {0}'.format(self.full_url))
@@ -171,7 +182,13 @@ class FaviconDownloader(object):
             except AttributeError as e:
                 print("Error")
                 
-        self.favicon_url = [self.full_url + "/favicon.ico"]
+        try:
+            self.favicon_url = [self.full_url + "/favicon.ico"]
+        except TypeError as te:
+            if te.args[0] == "can't concat bytes to str":
+                self.favicon_url = [self.full_url.decode('UTF-8') + "/favicon.ico"]
+            else:
+                raise te
         
         for icon in icons:
             logger.debug('get_favicon_urls -> icon[\'href\'] = {0}'.format(icon['href']))
@@ -192,8 +209,14 @@ class FaviconDownloader(object):
                 url_netloc = urlparse.urlparse(self.full_url).netloc
             else:
                 url_netloc = up.netloc
-                
-            favicon = url_scheme + "://" + url_netloc + up.path
+            
+            try:
+                favicon = url_scheme + "://" + url_netloc + up.path
+            except TypeError as te:
+                if te.args[0] == "Can't convert 'bytes' object to str implicitly":
+                    favicon = url_scheme + "://" + url_netloc.decode("UTF-8") + up.path
+                else:
+                    raise te
             
             logger.debug('get_favicon_urls -> favicon = {0}'.format(favicon))
             logger.debug('get_favicon_urls -> self.favicon_url = {}'.format(self.favicon_url))
@@ -225,9 +248,21 @@ class FaviconDownloader(object):
                 logger.debug('get_favicon -> up = {0}'.format(up))
                 
                 if (t[len(t)-1] == 'favicon.ico' or t[len(t)-1] == 'favicon.png'):
-                    self.filename = "favicon." + up.netloc + "." + self.get_favicon_type().lower()
+                    try:
+                        self.filename = "favicon." + up.netloc + "." + self.get_favicon_type().lower()
+                    except TypeError as te:
+                        if te.args[0] == "Can't convert 'bytes' object to str implicitly":
+                            self.filename = "favicon." + up.netloc.decode("UTF-8") + "." + self.get_favicon_type().lower()
+                        else:
+                            raise te
                 else:
-                    self.filename = "favicon." + up.netloc + "-" + t[len(t)-1] + "." + self.get_favicon_type().lower()
+                    try:
+                        self.filename = "favicon." + up.netloc + "-" + t[len(t)-1] + "." + self.get_favicon_type().lower()
+                    except TypeError as te:
+                        if te.args[0] == "Can't convert 'bytes' object to str implicitly":
+                            self.filename = "favicon." + up.netloc.decode("UTF-8") + "-" + t[len(t)-1] + "." + self.get_favicon_type().lower()
+                        else:
+                            raise te
                 
                 logger.debug('get_favicon -> self.filename = {0}'.format(self.filename))
                 
