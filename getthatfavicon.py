@@ -4,15 +4,21 @@
 A favicon downloader
 """
 
-import urlparse
+try:
+    import urlparse
+except ImportError:
+    import urllib.parse as urlparse
 import os.path
 import argparse
-import StringIO
+try:
+    import StringIO
+except ImportError:
+    import io
 import datetime
 import sys
 import logging
 
-import Image
+from PIL import Image
 import requests
 from bs4 import BeautifulSoup
 
@@ -30,7 +36,7 @@ import frequests
 
 test_pages = ['index.hu', 'twitter.com', 'otp.hu', 'worldoftanks.eu', 'facebook.com', '750g.com', 'projecteuler.com']
 
-class FaviconDownloader():
+class FaviconDownloader(object):
 
     def get_full_url(self):
         up = urlparse.urlparse(self.url)
@@ -81,8 +87,12 @@ class FaviconDownloader():
         
     
     def get_img(self):
-        output = StringIO.StringIO(self.icon)
-                
+        print(self.icon)
+        try:
+            output = StringIO.StringIO(self.icon)
+        except NameError:
+            output = io.BytesIO(self.icon)
+
         try:
             img = Image.open(output)
             output.close()
